@@ -12,17 +12,13 @@
 	$: rightNodes = orgtree.children.slice(0, splitPoint);
 	$: leftNodes = orgtree.children.slice(splitPoint);
 
-	let leftPositions: DOMRect[] = [];
-	let rightPositions: DOMRect[] = [];
-	$: console.log(leftPositions, rightPositions);
-	console.log(orgtree);
-
+	// TODO: Drop the full-size canvas and just draw lines from the root node to the topic nodes.
 	// Update size of canvas to fit the map div after update.
 	const updateCanvas = () => {
 		// Hack to make sure the canvas is sized correctly after the DOM is updated.
 		setTimeout(() => {
 			const map = document.getElementById('map');
-			const canvas = document.querySelector('canvas');
+			const canvas = document.getElementById('rootCanvas') as HTMLCanvasElement | null;
 			if (!map || !canvas) return;
 
 			canvas.width = map.clientWidth;
@@ -41,12 +37,13 @@
 			const leftX = rootRect.x + (rootRect.width * 1) / 8;
 			const leftY = rootRect.y + rootRect.height / 2;
 
+			ctx.strokeStyle = 'black';
+			ctx.lineWidth = 2;
+
 			document.querySelectorAll('#right .topic').forEach((topic) => {
 				const topicRect = topic.getBoundingClientRect();
 				const topicX = topicRect.x;
 				const topicY = topicRect.y + topicRect.height / 2;
-				ctx.strokeStyle = 'black';
-				ctx.lineWidth = 2;
 				ctx.beginPath();
 				ctx.moveTo(rightX - mapRect.x, rightY - mapRect.y);
 				ctx.lineTo(topicX - mapRect.x, topicY - mapRect.y);
@@ -56,22 +53,11 @@
 				const topicRect = topic.getBoundingClientRect();
 				const topicX = topicRect.x + topicRect.width;
 				const topicY = topicRect.y + topicRect.height / 2;
-				ctx.strokeStyle = 'black';
-				ctx.lineWidth = 2;
 				ctx.beginPath();
 				ctx.moveTo(leftX - mapRect.x, leftY - mapRect.y);
 				ctx.lineTo(topicX - mapRect.x, topicY - mapRect.y);
 				ctx.stroke();
 			});
-			// rightPositions.forEach((pos) => {
-			// 	// ctx.clearRect(0, 0, canvas.width, canvas.height);
-			// 	ctx.strokeStyle = 'black';
-			// 	ctx.lineWidth = 2;
-			// 	ctx.beginPath();
-			// 	ctx.moveTo(rootX - mapRect.x, rootY - mapRect.y);
-			// 	ctx.lineTo(pos.x - mapRect.x, pos.y - mapRect.y + pos.height / 2);
-			// 	ctx.stroke();
-			// });
 		}, 0);
 	};
 	afterUpdate(updateCanvas);
@@ -94,7 +80,7 @@
 		{#if !rightOnly}
 			<ul id="left">
 				{#each leftNodes as child, idx}
-					<Topic orgnode={child} bind:position={leftPositions[idx]} on:expanded={updateCanvas} />
+					<Topic orgnode={child} on:expanded={updateCanvas} />
 				{/each}
 			</ul>
 		{/if}
@@ -103,11 +89,11 @@
 		</div>
 		<ul id="right">
 			{#each rightNodes as child, idx}
-				<Topic orgnode={child} bind:position={rightPositions[idx]} on:expanded={updateCanvas} />
+				<Topic orgnode={child} on:expanded={updateCanvas} />
 			{/each}
 		</ul>
 	</div>
-	<canvas />
+	<canvas id="rootCanvas" />
 </div>
 
 <style lang="scss">
@@ -121,11 +107,11 @@
 	#mapContainer {
 		position: relative;
 
-		canvas {
+		#rootCanvas {
 			position: absolute;
 			top: 0;
 			left: 0;
-			z-index: -1;
+			z-index: -2;
 			background-color: aqua;
 		}
 	}
