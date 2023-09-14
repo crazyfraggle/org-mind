@@ -1,18 +1,38 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Expander from './expander.svelte';
 	import type { OrgNode } from './orgtree';
+	import Expander from './expander.svelte';
 	import Subtopic from './subtopic.svelte';
 
 	export let orgnode: OrgNode;
-	export let position: DOMRect | undefined;
 
 	let expanded = false;
 	let topicElement: HTMLElement | null = null;
+	let subtopicList: HTMLElement | null = null;
+	let subnodePositions: number[] = [];
+
+	const updateListItemPositions = (expanded: boolean) => {
+		const subtopicPosition = subtopicList?.getBoundingClientRect() || { top: 0 };
+		subnodePositions = expanded
+			? Array.from(subtopicList?.children || [])
+					.map((child) => child.getBoundingClientRect())
+					.map((rect) => {
+						console.log(rect);
+						return rect;
+					})
+					.map((rect) => rect.top - subtopicPosition.top + rect.height / 2)
+			: [];
+	};
 
 	onMount(() => {
-		position = topicElement?.getBoundingClientRect();
-		console.log(orgnode.title, position);
+		const resizeObserver = new ResizeObserver((entries) => {
+			entries.forEach((entry) => {
+				console.log('Resizing', entry);
+				updateListItemPositions(expanded);
+			});
+		});
+		resizeObserver.observe(topicElement as Element);
+		return () => resizeObserver.unobserve(topicElement as Element);
 	});
 </script>
 
@@ -25,8 +45,8 @@
 		{/if}
 	</div>
 	{#if orgnode.children.length > 0}
-		<Expander bind:isExpanded={expanded} on:expanded />
-		<ul class={'subtopics ' + (expanded ? 'expanded' : 'collapsed')}>
+		<Expander on:expanded bind:isExpanded={expanded} exits={subnodePositions} />
+		<ul bind:this={subtopicList} class={'subtopics ' + (expanded ? 'expanded' : 'collapsed')}>
 			{#each orgnode.children as child}
 				<Subtopic node={child} on:expanded />
 			{/each}
