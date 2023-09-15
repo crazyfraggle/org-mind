@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { OrgNode } from './orgtree';
+	import type { OrgNode } from './types';
 	import Expander from './expander.svelte';
 	import Subtopic from './subtopic.svelte';
+	import OrgNodeBody from './orgnodebody.svelte';
 
 	export let orgnode: OrgNode;
 
@@ -10,6 +11,7 @@
 	let topicElement: HTMLElement | null = null;
 	let subtopicList: HTMLElement | null = null;
 	let subnodePositions: number[] = [];
+	let showBody = false;
 
 	const updateListItemPositions = (expanded: boolean) => {
 		const subtopicPosition = subtopicList?.getBoundingClientRect() || { top: 0 };
@@ -39,9 +41,12 @@
 <li bind:this={topicElement} class="topic">
 	<div class="topicContainer">
 		<span class="title">{orgnode.title}</span>
-		{#if orgnode.body}
-			<!-- TODO: Might need a smarter body renderer to support links, lists, tables -->
-			<div class="body">{orgnode.body}</div>
+		{#if orgnode.body.length > 0}
+			<label><input type="checkbox" bind:checked={showBody} />{showBody ? '🔼' : '🔽'}</label>
+
+			{#if showBody}
+				<OrgNodeBody bodyparts={orgnode.body} />
+			{/if}
 		{/if}
 	</div>
 	{#if orgnode.children.length > 0}
@@ -74,12 +79,20 @@
 	}
 
 	.topicContainer {
+		max-width: 25vw;
 		border: 1px solid black;
 		border-radius: 1em;
 		padding: 0.5em;
 
+		.title {
+			font-weight: bolder;
+		}
 		.body {
 			font-size: 80%;
+		}
+
+		input[type='checkbox'] {
+			display: none;
 		}
 	}
 

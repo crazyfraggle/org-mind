@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { OrgNode } from '$lib/orgtree';
+	import type { OrgNode } from '$lib/types';
 	import { onMount } from 'svelte';
 	import Breadcrumb from './breadcrumb.svelte';
 	import Topic from './topic.svelte';
@@ -74,14 +74,15 @@
 	});
 </script>
 
-<Breadcrumb
+<!-- Put the breadcrumb back in when we got subtree navigation working. -->
+<!-- <Breadcrumb
 	crumbs={[
 		{ title: orgtree.title, node: orgtree },
 		{ title: orgtree.children[0].title, node: orgtree.children[0] }
 	]}
-/>
+/> -->
 
-<div class="settings">
+<div id="settings">
 	<label><input type="checkbox" bind:checked={rightOnly} />Right only</label>
 	<label>Level: <input type="number" bind:value={level} /></label>
 </div>
@@ -143,10 +144,21 @@
 
 	div#root {
 		background: darkcyan;
-		border: 1px solid cyan;
-		border-radius: 5px;
-		padding: 5px 10px;
+		border: 1px solid black;
+		border-radius: 0.5em;
+		padding: 0.5em 1em;
 		font-size: 125%;
+	}
+
+	#settings {
+		position: absolute;
+		top: 0;
+		right: 0;
+		z-index: 1;
+		background: white;
+		padding: 5px;
+		border: 1px solid black;
+		border-radius: 5px;
 	}
 
 	.highlight {

@@ -18,6 +18,4 @@ npm run dev -- --open
 #+END_SRC
 
 * Requirements
-Some fairly new (as of <2023-09-15 Fri>) CSS techniques have been used, so if it looks wrong, you probably need a more recent chromium based browser.
-
-
+Some fairly new (as of [2023-09-15 Fri]) CSS techniques have been used, so if it looks wrong, you probably need a more recent chromium based browser.

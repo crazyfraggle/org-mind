@@ -1,4 +1,4 @@
-import type { OrgNode } from './orgtree';
+import type { OrgNode } from './types';
 
 export interface Crumb {
 	title: string;
