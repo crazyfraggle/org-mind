@@ -7,7 +7,7 @@ For a long time, I've been organizing my brain in org-mode files. The hierarchic
 
 * Usage
 ** Online
-Launch the web page: TBD
+Launch the app hosted on github: [[https://blog.crazyfraggle.com/org-mind/][Org-Mind App]]
 
 ** Locally
 1. Clone the repository.
