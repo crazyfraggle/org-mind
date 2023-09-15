@@ -35,7 +35,6 @@
 		ctx.stroke();
 	};
 
-	$: console.log('Exits', exits, isExpanded);
 	$: buttonLabel = isExpanded ? '➖' : '➕';
 	$: dispatch('expanded', isExpanded);
 	$: updateLines(exits, isExpanded);
