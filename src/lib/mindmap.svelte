@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { OrgNode } from '$lib/orgtree';
-	import { afterUpdate } from 'svelte';
+	import { onMount } from 'svelte';
 	import Breadcrumb from './breadcrumb.svelte';
 	import Topic from './topic.svelte';
 
@@ -60,7 +60,18 @@
 			});
 		}, 0);
 	};
-	afterUpdate(updateCanvas);
+
+	onMount(() => {
+		const mapContainer = document.getElementById('mapContainer');
+		const resizeObserver = new ResizeObserver((entries) => {
+			entries.forEach((entry) => {
+				console.log('Resizing', entry);
+				updateCanvas();
+			});
+		});
+		resizeObserver.observe(mapContainer as Element);
+		return () => resizeObserver.unobserve(mapContainer as Element);
+	});
 </script>
 
 <Breadcrumb
@@ -112,7 +123,6 @@
 			top: 0;
 			left: 0;
 			z-index: -2;
-			background-color: aqua;
 		}
 	}
 	ul {
