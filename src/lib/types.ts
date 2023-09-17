@@ -45,3 +45,23 @@ export interface OrgNode {
 	children: OrgNode[];
 	parent?: OrgNode;
 }
+
+// Type narrowing functions
+export function isText(element: OrgBodyElement): element is OrgText {
+	return element.type === 'text';
+}
+export function isTable(element: OrgBodyElement): element is OrgTable {
+	return element.type === 'table';
+}
+export function isPreformatted(element: OrgBodyElement): element is OrgPreformatted {
+	return element.type === 'preformatted';
+}
+export function isSource(element: OrgBodyElement): element is OrgSource {
+	return element.type === 'source';
+}
+export function isUnorderedList(element: OrgBodyElement): element is OrgUnorderedList {
+	return element.type === 'unorderedList';
+}
+export function isOrderedList(element: OrgBodyElement): element is OrgOrderedList {
+	return element.type === 'orderedList';
+}

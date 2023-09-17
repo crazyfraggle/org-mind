@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { orgTextToMindMap } from './orgTextToMindMap';
+import { isSource, isText } from './types';
 
 describe('header parsing tests', () => {
 	it('detects a header', () => {
@@ -185,8 +186,10 @@ This is a body
 		expect(rootNode.children[0].children.length).toBe(1);
 		expect(rootNode.children[0].children[0].title).toBe('Header 2');
 		expect(rootNode.children[0].children[0].body.length).toBe(1);
-		expect(rootNode.children[0].children[0].body[0].type).toBe('text');
-		expect(rootNode.children[0].children[0].body[0].text).toBe('This is a body');
+		expect(isText(rootNode.children[0].children[0].body[0])).toBe(true);
+		if (isText(rootNode.children[0].children[0].body[0])) {
+			expect(rootNode.children[0].children[0].body[0].text).toBe('This is a body');
+		}
 	});
 
 	it('detects a body with a sibling', () => {
@@ -203,8 +206,10 @@ This is a body
 		expect(rootNode.children[0].children.length).toBe(2);
 		expect(rootNode.children[0].children[0].title).toBe('Header 2');
 		expect(rootNode.children[0].children[0].body.length).toBe(1);
-		expect(rootNode.children[0].children[0].body[0].type).toBe('text');
-		expect(rootNode.children[0].children[0].body[0].text).toBe('This is a body');
+		expect(isText(rootNode.children[0].children[0].body[0])).toBe(true);
+		if (isText(rootNode.children[0].children[0].body[0])) {
+			expect(rootNode.children[0].children[0].body[0].text).toBe('This is a body');
+		}
 		expect(rootNode.children[0].children[1].title).toBe('Header 3');
 	});
 
@@ -222,8 +227,10 @@ console.log('Hello World');
 		expect(rootNode.children[0].children.length).toBe(1);
 		expect(rootNode.children[0].children[0].title).toBe('Header 2');
 		expect(rootNode.children[0].children[0].body.length).toBe(1);
-		expect(rootNode.children[0].children[0].body[0].type).toBe('source');
-		expect(rootNode.children[0].children[0].body[0].language).toBe('javascript');
-		expect(rootNode.children[0].children[0].body[0].text).toBe("console.log('Hello World');");
+		expect(isSource(rootNode.children[0].children[0].body[0])).toBe(true);
+		if (isSource(rootNode.children[0].children[0].body[0])) {
+			expect(rootNode.children[0].children[0].body[0].language).toBe('javascript');
+			expect(rootNode.children[0].children[0].body[0].text).toBe("console.log('Hello World');");
+		}
 	});
 });
