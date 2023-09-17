@@ -1,5 +1,7 @@
 <script lang="ts">
-	export let text = '';
+	import type { OrgText } from './types';
+
+	export let text: OrgText;
 
 	// Todo: Tokenize text to extract links, tags, etc.
 	// We need:
@@ -12,4 +14,4 @@
 	// - Dates
 </script>
 
-<p>{text}</p>
+<p>{text.text}</p>

@@ -1,17 +1,25 @@
 <script lang="ts">
 	import OrgNodeText from './orgnodetext.svelte';
-	import type { OrgBodyElement } from './types';
+	import {
+		type OrgBodyElement,
+		isText,
+		isPreformatted,
+		isSource,
+		isOrderedList,
+		isUnorderedList,
+		isTable
+	} from './types';
 
 	export let bodyparts: OrgBodyElement[] = [];
 </script>
 
 <div class="body">
 	{#each bodyparts as element}
-		{#if element.type === 'text'}
-			<OrgNodeText text={element.text} />
-		{:else if element.type === 'preformatted'}
+		{#if isText(element)}
+			<OrgNodeText text={element} />
+		{:else if isPreformatted(element)}
 			<pre>{element.text}</pre>
-		{:else if element.type === 'table'}
+		{:else if isTable(element)}
 			<table>
 				{#each element.rows as row}
 					<tr>
@@ -21,19 +29,19 @@
 					</tr>
 				{/each}
 			</table>
-		{:else if element.type === 'unorderedList'}
+		{:else if isUnorderedList(element)}
 			<ul>
 				{#each element.items as item}
 					<li>{item}</li>
 				{/each}
 			</ul>
-		{:else if element.type === 'orderedList'}
+		{:else if isOrderedList(element)}
 			<ol>
 				{#each element.items as item}
 					<li>{item}</li>
 				{/each}
 			</ol>
-		{:else if element.type === 'source'}
+		{:else if isSource(element)}
 			<pre><code>{element.text}</code></pre>
 		{/if}
 	{/each}
