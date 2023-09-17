@@ -3,19 +3,42 @@
 A mindmap viewer for org-mode files.
 
 * Why?
-For a long time, I've been organizing my brain in org-mode files. The hierarchical layout does fit into something that could work as a mindmap. So I wanted to check if this could be done.
+For a long time, I've been organizing my brain in org-mode files. I also pick up mind mapping apps from time to time to visualize better.
+
+The hierarchical layout of org-files does fit into something that could work as a mindmap though, so I wanted to check if this could be done.
+
+This is the result.
+
+Currently this allows only to view the map. Editting support is planned for a future version.
 
 * Usage
-** Online
+** Launch the app
+*** Online
 Launch the app hosted on github: [[https://blog.crazyfraggle.com/org-mind/][Org-Mind App]]
 
-** Locally
+*** Locally
 1. Clone the repository.
 2. Install and run project.
 #+BEGIN_SRC bash
 npm install
 npm run dev -- --open
 #+END_SRC
+** Open a file
++ Hit the =Open file= button and select a file.
++ Alternatively, hit =Open URL= and select a file online. (It defaults to the planning doc in this project on Github)
 
 * Requirements
-Some fairly new (as of [2023-09-15 Fri]) CSS techniques have been used, so if it looks wrong, you probably need a more recent chromium based browser.
+Some fairly new (as of this writing at [2023-09-15 Fri]) web techniques have been used, so if it looks wrong, you probably need a more recent chromium based browser.
+** CSS style container
+The app use this to scope styling for elements on the left and right of the map.
+#+BEGIN_SRC css
+@container style(--rol: left) {
+    .subtopic {
+        flex-direction: row-reverse;
+    }
+}
+#+END_SRC
+** Filesystem Web API
+The Filesystem web api is used to access files locally on the user's machine. This will eventually allow saving of the org file on editting.
+** ResizeObserver Web API
+In order to more easily detect when a re-render is needed for the curved lines to the topics, the [[https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver][ResizeObserver API]] is used.

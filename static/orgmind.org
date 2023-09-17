@@ -8,11 +8,12 @@ Since org-mode files are hierarchical, we can use them as a mind map.
 What did you learn in school today?
 ** vitest
 Snappy and easy to use.
-Co-pilot happily created actual usable tests.
+Github Co-pilot happily created actual usable tests.
 ** Browser filesystem API
 This is a thing. It's not well supported yet, but it's a thing.
 https://developer.chrome.com/articles/file-system-access/
-** CSS things
+It will allow saving of the file when we get support for editting.
+** CSS tricks
 *** Variables
 Allows passing CSS props from top level containers into child components without the need for prop drilling.
 *** Container testing
