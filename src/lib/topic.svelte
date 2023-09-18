@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import type { OrgNode } from './types';
 	import Expander from './expander.svelte';
 	import Subtopic from './subtopic.svelte';
 	import OrgNodeBody from './orgnodebody.svelte';
 
 	export let orgnode: OrgNode;
+
+	const dispatch = createEventDispatcher();
 
 	let expanded = false;
 	let topicElement: HTMLElement | null = null;
@@ -26,7 +29,12 @@
 			: [];
 	};
 
-	onMount(() => {
+	const onDoubleTap = (event: MouseEvent) => {
+		console.log('Double tap', event);
+		dispatch('nodeSelected', orgnode);
+	};
+
+	$: onMount(() => {
 		const resizeObserver = new ResizeObserver((entries) => {
 			entries.forEach((entry) => {
 				console.log('Resizing', entry);
@@ -38,9 +46,9 @@
 	});
 </script>
 
-<li bind:this={topicElement} class="topic">
+<li bind:this={topicElement} class={`topic ${orgnode.state}`} on:dblclick={onDoubleTap}>
 	<div class="topicContainer">
-		<span class="title">{orgnode.title}</span>
+		<span class="title"><span class="keyword">{orgnode.stateKeyword}</span> {orgnode.title}</span>
 		{#if orgnode.body.length > 0}
 			<label><input type="checkbox" bind:checked={showBody} />{showBody ? '🔼' : '🔽'}</label>
 
@@ -53,7 +61,7 @@
 		<Expander on:expanded bind:isExpanded={expanded} exits={subnodePositions} />
 		<ul bind:this={subtopicList} class={'subtopics ' + (expanded ? 'expanded' : 'collapsed')}>
 			{#each orgnode.children as child}
-				<Subtopic node={child} on:expanded />
+				<Subtopic node={child} on:expanded on:nodeSelected />
 			{/each}
 		</ul>
 	{/if}
@@ -76,6 +84,20 @@
 		display: flex;
 		align-items: center;
 		margin: 0.5em 0;
+
+		&.done {
+			.topicContainer {
+				background-color: #ddd;
+			}
+			.keyword {
+				color: #aaa;
+			}
+		}
+		&.todo {
+			.keyword {
+				color: #f00;
+			}
+		}
 	}
 
 	.topicContainer {

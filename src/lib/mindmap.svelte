@@ -7,10 +7,13 @@
 	export let orgtree: OrgNode;
 	export let level: number = 0;
 	let rightOnly = false;
-	$: splitNodes = !rightOnly && orgtree.children.length > 2;
-	$: splitPoint = splitNodes ? Math.ceil(orgtree.children.length / 2) : orgtree.children.length;
-	$: rightNodes = orgtree.children.slice(0, splitPoint);
-	$: leftNodes = orgtree.children.slice(splitPoint);
+	$: rootNode = orgtree;
+	let breadCrumbs: OrgNode[] = [];
+
+	$: splitNodes = !rightOnly && rootNode.children.length > 2;
+	$: splitPoint = splitNodes ? Math.ceil(rootNode.children.length / 2) : rootNode.children.length;
+	$: rightNodes = rootNode.children.slice(0, splitPoint);
+	$: leftNodes = rootNode.children.slice(splitPoint);
 
 	// TODO: Drop the full-size canvas and just draw lines from the root node to the topic nodes.
 	// Update size of canvas to fit the map div after update.
@@ -61,6 +64,20 @@
 		}, 0);
 	};
 
+	const onNodeSelected = (event: CustomEvent<OrgNode>) => {
+		console.log('Node selected', event);
+		// Add parents to breadcrumb.
+		breadCrumbs = [];
+		let parent = event.detail.parent;
+		while (parent) {
+			breadCrumbs.push(parent);
+			parent = parent.parent;
+		}
+
+		// Set node as new root node.
+		rootNode = event.detail;
+	};
+
 	onMount(() => {
 		const mapContainer = document.getElementById('mapContainer');
 		const resizeObserver = new ResizeObserver((entries) => {
@@ -75,12 +92,7 @@
 </script>
 
 <!-- Put the breadcrumb back in when we got subtree navigation working. -->
-<!-- <Breadcrumb
-	crumbs={[
-		{ title: orgtree.title, node: orgtree },
-		{ title: orgtree.children[0].title, node: orgtree.children[0] }
-	]}
-/> -->
+<Breadcrumb crumbs={breadCrumbs} on:nodeSelected={onNodeSelected} />
 
 <div id="settings">
 	<label><input type="checkbox" bind:checked={rightOnly} />Right only</label>
@@ -92,16 +104,16 @@
 		{#if !rightOnly}
 			<ul id="left">
 				{#each leftNodes as child, idx}
-					<Topic orgnode={child} on:expanded={updateCanvas} />
+					<Topic orgnode={child} on:expanded={updateCanvas} on:nodeSelected={onNodeSelected} />
 				{/each}
 			</ul>
 		{/if}
 		<div id="root">
-			<span class="title">{orgtree.title}</span>
+			<span class="title">{rootNode.title}</span>
 		</div>
 		<ul id="right">
 			{#each rightNodes as child, idx}
-				<Topic orgnode={child} on:expanded={updateCanvas} />
+				<Topic orgnode={child} on:expanded={updateCanvas} on:nodeSelected={onNodeSelected} />
 			{/each}
 		</ul>
 	</div>
