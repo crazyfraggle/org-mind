@@ -5,15 +5,17 @@
 	import Topic from './topic.svelte';
 
 	export let orgtree: OrgNode;
-	export let level: number = 0;
+	// export let level: number = 0;
 	let rightOnly = false;
+	let hideDone = false;
 	$: rootNode = orgtree;
 	let breadCrumbs: OrgNode[] = [];
 
-	$: splitNodes = !rightOnly && rootNode.children.length > 2;
-	$: splitPoint = splitNodes ? Math.ceil(rootNode.children.length / 2) : rootNode.children.length;
-	$: rightNodes = rootNode.children.slice(0, splitPoint);
-	$: leftNodes = rootNode.children.slice(splitPoint);
+	$: visibleChildren = rootNode.children.filter((child) => !hideDone || child.state !== 'done');
+	$: splitNodes = !rightOnly && visibleChildren.length > 2;
+	$: splitPoint = splitNodes ? Math.ceil(visibleChildren.length / 2) : visibleChildren.length;
+	$: rightNodes = visibleChildren.slice(0, splitPoint);
+	$: leftNodes = visibleChildren.slice(splitPoint);
 
 	// TODO: Drop the full-size canvas and just draw lines from the root node to the topic nodes.
 	// Update size of canvas to fit the map div after update.
@@ -96,7 +98,8 @@
 
 <div id="settings">
 	<label><input type="checkbox" bind:checked={rightOnly} />Right only</label>
-	<label>Level: <input type="number" bind:value={level} /></label>
+	<label><input type="checkbox" bind:checked={hideDone} />Hide completed nodes</label>
+	<!-- <label>Level: <input type="number" bind:value={level} /></label> -->
 </div>
 
 <div id="mapContainer">
@@ -164,6 +167,8 @@
 
 	#settings {
 		position: absolute;
+		display: flex;
+		flex-direction: column;
 		top: 0;
 		right: 0;
 		z-index: 1;
