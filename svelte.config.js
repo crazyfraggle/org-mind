@@ -1,6 +1,6 @@
 // import adapter from '@sveltejs/adapter-auto';
 import adapter from 'svelte-adapter-github';
-import { vitePreprocess } from '@sveltejs/kit/vite';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 const dev = process.env.NODE_ENV === 'development';
 
