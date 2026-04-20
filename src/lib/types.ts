@@ -28,13 +28,20 @@ export interface OrgOrderedList {
 	items: OrgBodyElement[];
 }
 
+export interface OrgLink {
+	type: 'link';
+	target: string;
+	description: string;
+}
+
 export type OrgBodyElement =
 	| OrgText
 	| OrgTable
 	| OrgPreformatted
 	| OrgSource
 	| OrgUnorderedList
-	| OrgOrderedList;
+	| OrgOrderedList
+	| OrgLink;
 
 export interface OrgNode {
 	line: number;
@@ -44,6 +51,10 @@ export interface OrgNode {
 	body: OrgBodyElement[];
 	children: OrgNode[];
 	parent?: OrgNode;
+	deadline?: string;
+	scheduled?: string;
+	closed?: string;
+	properties?: Record<string, string>;
 }
 
 // Type narrowing functions
@@ -64,4 +75,7 @@ export function isUnorderedList(element: OrgBodyElement): element is OrgUnordere
 }
 export function isOrderedList(element: OrgBodyElement): element is OrgOrderedList {
 	return element.type === 'orderedList';
+}
+export function isLink(element: OrgBodyElement): element is OrgLink {
+	return element.type === 'link';
 }

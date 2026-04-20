@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { orgTextToMindMap } from './orgTextToMindMap';
-import { isSource, isText } from './types';
+import { isLink, isSource, isText } from './types';
 
 describe('header parsing tests', () => {
 	it('detects a header', () => {
@@ -170,6 +170,127 @@ describe('directive parsing tests', () => {
 `;
 		const rootNode = orgTextToMindMap(org);
 		expect(rootNode.title).toBe('My Title');
+	});
+});
+
+describe('metadata parsing tests', () => {
+	it('parses DEADLINE onto the node', () => {
+		const org = `
+* TODO Some task
+DEADLINE: <2026-04-15 Wed>
+`;
+		const rootNode = orgTextToMindMap(org);
+		const node = rootNode.children[0];
+		expect(node.deadline).toBe('2026-04-15 Wed');
+		expect(node.body.length).toBe(0);
+	});
+
+	it('parses SCHEDULED onto the node', () => {
+		const org = `
+* Some task
+SCHEDULED: <2026-04-17 Fri>
+`;
+		const rootNode = orgTextToMindMap(org);
+		const node = rootNode.children[0];
+		expect(node.scheduled).toBe('2026-04-17 Fri');
+		expect(node.body.length).toBe(0);
+	});
+
+	it('parses CLOSED onto the node', () => {
+		const org = `
+* DONE Some task
+CLOSED: [2026-04-14 Tue 11:42]
+`;
+		const rootNode = orgTextToMindMap(org);
+		const node = rootNode.children[0];
+		expect(node.closed).toBe('2026-04-14 Tue 11:42');
+		expect(node.body.length).toBe(0);
+	});
+
+	it('parses combined CLOSED + DEADLINE on one line', () => {
+		const org = `
+** DONE Android
+CLOSED: [2026-04-14 Tue 11:42] DEADLINE: <2026-04-15 Wed>
+`;
+		const rootNode = orgTextToMindMap(org);
+		const node = rootNode.children[0];
+		expect(node.closed).toBe('2026-04-14 Tue 11:42');
+		expect(node.deadline).toBe('2026-04-15 Wed');
+		expect(node.body.length).toBe(0);
+	});
+});
+
+describe('drawer parsing tests', () => {
+	it('parses :PROPERTIES: drawer into node.properties', () => {
+		const org = `
+* Some heading
+:PROPERTIES:
+:ID: abc-123
+:CUSTOM: value
+:END:
+`;
+		const rootNode = orgTextToMindMap(org);
+		const node = rootNode.children[0];
+		expect(node.properties).toEqual({ ID: 'abc-123', CUSTOM: 'value' });
+		expect(node.body.length).toBe(0);
+	});
+
+	it('skips non-PROPERTIES drawers from body', () => {
+		const org = `
+* Some heading
+:PEOPLE:
+Ahmed: Knows things
+Zach: Does stuff
+:END:
+Some body text
+`;
+		const rootNode = orgTextToMindMap(org);
+		const node = rootNode.children[0];
+		expect(node.properties).toBeUndefined();
+		expect(node.body.length).toBe(1);
+		if (isText(node.body[0])) {
+			expect(node.body[0].text).toBe('Some body text');
+		}
+	});
+
+	it('skips :LOGBOOK: drawer from body', () => {
+		const org = `
+* Some heading
+:LOGBOOK:
+CLOCK: [2026-04-14 Tue 13:07]--[2026-04-14 Tue 13:11] =>  0:04
+:END:
+`;
+		const rootNode = orgTextToMindMap(org);
+		const node = rootNode.children[0];
+		expect(node.body.length).toBe(0);
+	});
+});
+
+describe('org link parsing tests', () => {
+	it('parses a standalone org link as OrgLink body element', () => {
+		const org = `
+* Some heading
+[[id:d093e89e-9fe3-44d2-b955-92a8f48748cd][2026-04 ContentOrigin change]]
+`;
+		const rootNode = orgTextToMindMap(org);
+		const node = rootNode.children[0];
+		expect(node.body.length).toBe(1);
+		expect(isLink(node.body[0])).toBe(true);
+		if (isLink(node.body[0])) {
+			expect(node.body[0].target).toBe('id:d093e89e-9fe3-44d2-b955-92a8f48748cd');
+			expect(node.body[0].description).toBe('2026-04 ContentOrigin change');
+		}
+	});
+
+	it('keeps a line with mixed text and link as OrgText', () => {
+		const org = `
+* Some heading
+See [[id:abc][link here]] for details
+`;
+		const rootNode = orgTextToMindMap(org);
+		const node = rootNode.children[0];
+		expect(node.body.length).toBe(1);
+		expect(isText(node.body[0])).toBe(true);
 	});
 });
 

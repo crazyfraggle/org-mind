@@ -42,7 +42,7 @@
 
 <div class="expander" bind:this={expanderContainer}>
 	<label class="expander">{buttonLabel}<input bind:checked={isExpanded} type="checkbox" /></label>
-	<canvas bind:this={canvasElement} />
+	<canvas bind:this={canvasElement}></canvas>
 </div>
 
 <style lang="scss">

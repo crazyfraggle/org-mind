@@ -1,4 +1,4 @@
-import type { OrgNode, OrgSource } from './types';
+import type { OrgLink, OrgNode, OrgSource } from './types';
 
 const lineMatchers = {
 	header: /^(\*+)\s+(.*)$/, // m[1] => level, m[2] => content
@@ -11,10 +11,20 @@ const lineMatchers = {
 	horizontalRule: /^(\s*)-{5,}$/, //
 	blockdirective: /^(\s*)#\+(?:(begin|end)_)?(.*)$/i, // m[1] => indentation, m[2] => type, m[3] => content
 	// TODO: Extend list of directives
-	docdirective: /^(\s*)#\+(?:(TITLE|TODO|STARTUP|AUTHOR|DATE)):\s*(.*)$/, // m[1] => indentation, m[2] => type, m[3] => content
+	docdirective: /^(\s*)#\+(?:(TITLE|TODO|STARTUP|AUTHOR|DATE)):\s*(.*)$/i, // m[1] => indentation, m[2] => type, m[3] => content
 	comment: /^(\s*)#(.*)$/,
 	line: /^(\s*)(.*)$/
 };
+
+const metadataMatchers = {
+	deadline: /DEADLINE:\s*<([^>]+)>/,
+	scheduled: /SCHEDULED:\s*<([^>]+)>/,
+	closed: /CLOSED:\s*\[([^\]]+)\]/
+};
+const drawerStart = /^\s*:([A-Z_]+):\s*$/;
+const drawerEnd = /^\s*:END:\s*$/;
+const standaloneOrgLink = /^\s*\[\[([^\]]*)\]\[([^\]]*)\]\]\s*$/;
+const propertyLine = /^\s*:([A-Za-z_]+):\s+(.+)$/;
 
 let todoKeywords: { todo: string[]; done: string[] } = { todo: ['TODO'], done: ['DONE'] };
 
@@ -53,6 +63,9 @@ export function orgTextToMindMap(org: string): OrgNode {
 
 	let currentNode = rootNode;
 	let level = 0;
+	let inDrawer = false;
+	let drawerName = '';
+	let drawerProperties: Record<string, string> = {};
 
 	const orgLines = org.split('\n');
 	for (let i = 0; i < orgLines.length; i++) {
@@ -117,7 +130,7 @@ export function orgTextToMindMap(org: string): OrgNode {
 			}
 		} else if ((m = line.match(lineMatchers.docdirective))) {
 			console.log('Directive', m[1], m[2], m[3]);
-			const type = m[2];
+			const type = m[2].toUpperCase();
 			const content = m[3];
 			if (type === 'TITLE') {
 				rootNode.title = content;
@@ -173,6 +186,38 @@ export function orgTextToMindMap(org: string): OrgNode {
 			} else {
 				console.log('Unknown block directive type: ', type, m);
 			}
+		} else if (inDrawer) {
+			// Inside a drawer — check for :END: or accumulate properties
+			if (drawerEnd.test(line)) {
+				if (drawerName === 'PROPERTIES') {
+					currentNode.properties = { ...drawerProperties };
+				}
+				inDrawer = false;
+				drawerName = '';
+				drawerProperties = {};
+			} else if (drawerName === 'PROPERTIES' && (m = line.match(propertyLine))) {
+				drawerProperties[m[1]] = m[2];
+			}
+			// All drawer content (LOGBOOK, PEOPLE, etc.) is skipped from body
+		} else if ((m = line.match(drawerStart))) {
+			inDrawer = true;
+			drawerName = m[1];
+			drawerProperties = {};
+		} else if (
+			metadataMatchers.deadline.test(line) ||
+			metadataMatchers.scheduled.test(line) ||
+			metadataMatchers.closed.test(line)
+		) {
+			// CLOSED/DEADLINE/SCHEDULED can all appear on one line
+			const deadlineMatch = line.match(metadataMatchers.deadline);
+			const scheduledMatch = line.match(metadataMatchers.scheduled);
+			const closedMatch = line.match(metadataMatchers.closed);
+			if (deadlineMatch) currentNode.deadline = deadlineMatch[1];
+			if (scheduledMatch) currentNode.scheduled = scheduledMatch[1];
+			if (closedMatch) currentNode.closed = closedMatch[1];
+		} else if ((m = line.match(standaloneOrgLink))) {
+			const linkElement: OrgLink = { type: 'link', target: m[1], description: m[2] };
+			currentNode.body.push(linkElement);
 		} else if ((m = line.match(lineMatchers.blank))) {
 			// console.log('Blank line');
 		} else if ((m = line.match(lineMatchers.line))) {

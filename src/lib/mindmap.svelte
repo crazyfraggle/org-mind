@@ -120,7 +120,7 @@
 			{/each}
 		</ul>
 	</div>
-	<canvas id="rootCanvas" />
+	<canvas id="rootCanvas"></canvas>
 </div>
 
 <style lang="scss">
@@ -178,7 +178,4 @@
 		border-radius: 5px;
 	}
 
-	.highlight {
-		border: 2px solid blue;
-	}
 </style>

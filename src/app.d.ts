@@ -7,6 +7,16 @@ declare global {
 		// interface PageData {}
 		// interface Platform {}
 	}
+
+	// File System Access API types (not yet in lib.dom.d.ts)
+	interface FileSystemDirectoryHandle {
+		values(): AsyncIterableIterator<FileSystemDirectoryHandle | FileSystemFileHandle>;
+	}
+
+	interface Window {
+		showOpenFilePicker(options?: object): Promise<FileSystemFileHandle[]>;
+		showDirectoryPicker(options?: object): Promise<FileSystemDirectoryHandle>;
+	}
 }
 
 export {};

@@ -1,11 +1,15 @@
 <script lang="ts">
 	import Mindmap from '$lib/mindmap.svelte';
+	import ThreadsView from '$lib/threadsview.svelte';
 	import { orgTextToMindMap } from '$lib/orgTextToMindMap';
+	import { buildOrgIdIndex, type OrgIdIndex } from '$lib/orgIdIndex';
 
 	// Default URL for URL popup
 	let url: string | null =
 		'https://raw.githubusercontent.com/crazyfraggle/org-mind/main/static/orgmind.org';
 	let fileHandle: FileSystemFileHandle | null = null;
+	let orgDir: FileSystemDirectoryHandle | null = null;
+	let idIndex: OrgIdIndex | null = null;
 
 	// Default map contains instructions for use
 	let orgText = `#+TITLE: Org Mode Mindmap
@@ -22,6 +26,8 @@
 ** Settings
 *** Click on the gear icon in the top right corner
 *** Change the "Right only" to keep the root node on the left`;
+
+	let viewMode: 'mindmap' | 'threads' = 'mindmap';
 
 	$: orgTree = orgTextToMindMap(orgText);
 
@@ -53,34 +59,100 @@
 		const contents = await response.text();
 		orgText = contents;
 	}
+
+	async function openOrgDirectory() {
+		orgDir = await window.showDirectoryPicker();
+		if (!orgDir) return;
+		idIndex = await buildOrgIdIndex(orgDir);
+	}
 </script>
 
-<div id="fileSelect">
+<div id="page">
+<div id="toolbar">
 	<button on:click={openFile}>Open file</button>
 	{#if fileHandle}
 		<button on:click={reloadFile}>Reload file</button>
 	{/if}
 	<button on:click={openURL}>Open URL</button>
+	<button on:click={openOrgDirectory}>
+		{orgDir ? `Org: ${orgDir.name}` : 'Open org dir'}
+	</button>
+	<div class="view-toggle">
+		<label class:active={viewMode === 'mindmap'}>
+			<input type="radio" bind:group={viewMode} value="mindmap" /> Map
+		</label>
+		<label class:active={viewMode === 'threads'}>
+			<input type="radio" bind:group={viewMode} value="threads" /> Threads
+		</label>
+	</div>
 </div>
-<Mindmap orgtree={orgTree} />
+<div id="content">
+	{#if viewMode === 'mindmap'}
+		<Mindmap orgtree={orgTree} />
+	{:else}
+		<ThreadsView orgtree={orgTree} {idIndex} />
+	{/if}
+</div>
+</div>
 
 <style lang="scss">
-	#fileSelect {
-		position: absolute;
-		top: 0;
-		left: 0;
-		z-index: 1;
+	#page {
 		display: flex;
 		flex-direction: column;
-		align-items: stretch;
-		justify-content: center;
+		height: 100vh;
+	}
+
+	#toolbar {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.4rem 0.75rem;
 		background: white;
-		padding: 5px;
-		border: 1px solid black;
-		border-radius: 5px;
+		border-bottom: 1px solid #ccc;
+		z-index: 1;
+
 		button {
-			margin-block: 3px;
-			padding: 2px;
+			padding: 0.25rem 0.6rem;
+			border: 1px solid #aaa;
+			border-radius: 4px;
+			background: #f4f4f4;
+			cursor: pointer;
+
+			&:hover {
+				background: #e8e8e8;
+			}
 		}
+
+		.view-toggle {
+			display: flex;
+			gap: 2px;
+			margin-left: auto;
+
+			label {
+				text-align: center;
+				padding: 0.25rem 0.6rem;
+				border-radius: 4px;
+				cursor: pointer;
+				font-size: 0.85em;
+				border: 1px solid #ccc;
+
+				&.active {
+					background: darkcyan;
+					color: white;
+					border-color: darkcyan;
+				}
+			}
+
+			input[type='radio'] {
+				display: none;
+			}
+		}
+	}
+
+	#content {
+		flex: 1;
+		overflow: hidden;
+		position: relative;
 	}
 </style>
