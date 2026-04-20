@@ -2,7 +2,7 @@
 	import Mindmap from '$lib/mindmap.svelte';
 	import ThreadsView from '$lib/threadsview.svelte';
 	import { orgTextToMindMap } from '$lib/orgTextToMindMap';
-	import { buildOrgIdIndex, type OrgIdIndex } from '$lib/orgIdIndex';
+	import { buildOrgIdIndex, resolveIdLink, type OrgIdIndex } from '$lib/orgIdIndex';
 
 	// Default URL for URL popup
 	let url: string | null =
@@ -10,6 +10,7 @@
 	let fileHandle: FileSystemFileHandle | null = null;
 	let orgDir: FileSystemDirectoryHandle | null = null;
 	let idIndex: OrgIdIndex | null = null;
+	let orgFiles: FileSystemFileHandle[] = [];
 
 	// Default map contains instructions for use
 	let orgText = `#+TITLE: Org Mode Mindmap
@@ -63,13 +64,38 @@
 	async function openOrgDirectory() {
 		orgDir = await window.showDirectoryPicker();
 		if (!orgDir) return;
+		// Collect root-level .org files for the file picker
+		const files: FileSystemFileHandle[] = [];
+		for await (const entry of orgDir.values()) {
+			if (entry.kind === 'file' && entry.name.endsWith('.org')) {
+				files.push(entry as FileSystemFileHandle);
+			}
+		}
+		orgFiles = files.sort((a, b) => a.name.localeCompare(b.name));
 		idIndex = await buildOrgIdIndex(orgDir);
+	}
+
+	async function selectOrgFile(handle: FileSystemFileHandle) {
+		fileHandle = handle;
+		const file = await handle.getFile();
+		orgText = await file.text();
+	}
+
+	function listenIdNavigate(node: HTMLElement) {
+		const handler = async (e: Event) => {
+			const id = (e as CustomEvent<string>).detail;
+			if (!idIndex) return;
+			const text = await resolveIdLink(idIndex, id);
+			if (text) orgText = text;
+		};
+		node.addEventListener('idnavigate', handler);
+		return { destroy: () => node.removeEventListener('idnavigate', handler) };
 	}
 </script>
 
 <div id="page">
 <div id="toolbar">
-	<button on:click={openFile}>Open file</button>
+	<button on:click={openFile}>Open single file</button>
 	{#if fileHandle}
 		<button on:click={reloadFile}>Reload file</button>
 	{/if}
@@ -77,6 +103,20 @@
 	<button on:click={openOrgDirectory}>
 		{orgDir ? `Org: ${orgDir.name}` : 'Open org dir'}
 	</button>
+	{#if orgFiles.length > 0}
+		<select
+			value={fileHandle?.name ?? ''}
+			on:change={(e) => {
+				const handle = orgFiles.find((f) => f.name === e.currentTarget.value);
+				if (handle) selectOrgFile(handle);
+			}}
+		>
+			<option value="" disabled>Select file...</option>
+			{#each orgFiles as f}
+				<option value={f.name}>{f.name}</option>
+			{/each}
+		</select>
+	{/if}
 	<div class="view-toggle">
 		<label class:active={viewMode === 'mindmap'}>
 			<input type="radio" bind:group={viewMode} value="mindmap" /> Map
@@ -86,7 +126,7 @@
 		</label>
 	</div>
 </div>
-<div id="content">
+<div id="content" use:listenIdNavigate>
 	{#if viewMode === 'mindmap'}
 		<Mindmap orgtree={orgTree} />
 	{:else}

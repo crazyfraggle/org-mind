@@ -47,7 +47,39 @@
 		{:else if isSource(element)}
 			<pre><code>{element.text}</code></pre>
 		{:else if isLink(element)}
-			<a class="org-link" href={element.target} title={element.target}>{element.description}</a>
+			{#if element.target.startsWith('id:')}
+				<button
+					class="org-link id-link"
+					title={element.target}
+					on:click={(e) =>
+						e.currentTarget.dispatchEvent(
+							new CustomEvent('idnavigate', {
+								detail: element.target.slice(3),
+								bubbles: true
+							})
+						)}>{element.description}</button
+				>
+			{:else}
+				<a class="org-link" href={element.target} title={element.target}
+					>{element.description}</a
+				>
+			{/if}
 		{/if}
 	{/each}
 </div>
+
+<style>
+	.id-link {
+		color: darkcyan;
+		text-decoration: underline;
+		cursor: pointer;
+		background: none;
+		border: none;
+		padding: 0;
+		font: inherit;
+	}
+
+	.id-link:hover {
+		color: teal;
+	}
+</style>
