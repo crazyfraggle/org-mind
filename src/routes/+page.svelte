@@ -29,6 +29,7 @@
 *** Change the "Right only" to keep the root node on the left`;
 
 	let viewMode: 'mindmap' | 'threads' = 'mindmap';
+	let reloadKey = 0;
 
 	$: orgTree = orgTextToMindMap(orgText);
 
@@ -43,14 +44,15 @@
 		orgText = contents;
 	}
 
-	async function reloadFile() {
+	async function reloadFiles() {
 		if (!fileHandle) {
 			alert('No file selected');
 			return;
 		}
 		const file = await fileHandle.getFile();
-		const contents = await file.text();
-		orgText = contents;
+		orgText = await file.text();
+		// Force all components to recreate, re-resolving linked content
+		reloadKey++;
 	}
 
 	async function openURL() {
@@ -97,7 +99,7 @@
 <div id="toolbar">
 	<button on:click={openFile}>Open single file</button>
 	{#if fileHandle}
-		<button on:click={reloadFile}>Reload file</button>
+		<button on:click={reloadFiles}>Reload files</button>
 	{/if}
 	<button on:click={openURL}>Open URL</button>
 	<button on:click={openOrgDirectory}>
@@ -127,11 +129,13 @@
 	</div>
 </div>
 <div id="content" use:listenIdNavigate>
-	{#if viewMode === 'mindmap'}
-		<Mindmap orgtree={orgTree} />
-	{:else}
-		<ThreadsView orgtree={orgTree} {idIndex} />
-	{/if}
+	{#key reloadKey}
+		{#if viewMode === 'mindmap'}
+			<Mindmap orgtree={orgTree} />
+		{:else}
+			<ThreadsView orgtree={orgTree} {idIndex} />
+		{/if}
+	{/key}
 </div>
 </div>
 
