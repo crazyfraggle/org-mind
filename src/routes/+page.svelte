@@ -1,8 +1,16 @@
 <script lang="ts">
 	import Mindmap from '$lib/mindmap.svelte';
 	import ThreadsView from '$lib/threadsview.svelte';
+	import WikiView from '$lib/wikiview.svelte';
 	import { orgTextToMindMap } from '$lib/orgTextToMindMap';
-	import { buildOrgIdIndex, resolveIdLink, type OrgIdIndex } from '$lib/orgIdIndex';
+	import {
+		buildOrgIdIndex,
+		buildOrgFilePathIndex,
+		resolveIdLink,
+		resolveFilePath,
+		type OrgIdIndex,
+		type OrgFilePathIndex
+	} from '$lib/orgIdIndex';
 
 	// Default URL for URL popup
 	let url: string | null =
@@ -10,6 +18,7 @@
 	let fileHandle: FileSystemFileHandle | null = null;
 	let orgDir: FileSystemDirectoryHandle | null = null;
 	let idIndex: OrgIdIndex | null = null;
+	let filePathIndex: OrgFilePathIndex | null = null;
 	let orgFiles: FileSystemFileHandle[] = [];
 
 	// Default map contains instructions for use
@@ -28,7 +37,7 @@
 *** Click on the gear icon in the top right corner
 *** Change the "Right only" to keep the root node on the left`;
 
-	let viewMode: 'mindmap' | 'threads' = 'mindmap';
+	let viewMode: 'wiki' | 'mindmap' | 'threads' = 'mindmap';
 	let reloadKey = 0;
 
 	$: orgTree = orgTextToMindMap(orgText);
@@ -75,6 +84,9 @@
 		}
 		orgFiles = files.sort((a, b) => a.name.localeCompare(b.name));
 		idIndex = await buildOrgIdIndex(orgDir);
+		filePathIndex = await buildOrgFilePathIndex(orgDir);
+		fileHandle = null;
+		viewMode = 'wiki';
 	}
 
 	async function selectOrgFile(handle: FileSystemFileHandle) {
@@ -84,14 +96,33 @@
 	}
 
 	function listenIdNavigate(node: HTMLElement) {
-		const handler = async (e: Event) => {
+		const idHandler = async (e: Event) => {
 			const id = (e as CustomEvent<string>).detail;
 			if (!idIndex) return;
 			const text = await resolveIdLink(idIndex, id);
-			if (text) orgText = text;
+			if (text) {
+				orgText = text;
+				viewMode = 'wiki';
+			}
 		};
-		node.addEventListener('idnavigate', handler);
-		return { destroy: () => node.removeEventListener('idnavigate', handler) };
+		const fileHandler = async (e: Event) => {
+			const path = (e as CustomEvent<string>).detail;
+			if (!filePathIndex) return;
+			const handle = resolveFilePath(filePathIndex, path);
+			if (!handle) return;
+			fileHandle = handle;
+			const file = await handle.getFile();
+			orgText = await file.text();
+			viewMode = 'wiki';
+		};
+		node.addEventListener('idnavigate', idHandler);
+		node.addEventListener('filenavigate', fileHandler);
+		return {
+			destroy: () => {
+				node.removeEventListener('idnavigate', idHandler);
+				node.removeEventListener('filenavigate', fileHandler);
+			}
+		};
 	}
 </script>
 
@@ -120,6 +151,9 @@
 		</select>
 	{/if}
 	<div class="view-toggle">
+		<label class:active={viewMode === 'wiki'}>
+			<input type="radio" bind:group={viewMode} value="wiki" /> Wiki
+		</label>
 		<label class:active={viewMode === 'mindmap'}>
 			<input type="radio" bind:group={viewMode} value="mindmap" /> Map
 		</label>
@@ -130,7 +164,14 @@
 </div>
 <div id="content" use:listenIdNavigate>
 	{#key reloadKey}
-		{#if viewMode === 'mindmap'}
+		{#if viewMode === 'wiki'}
+			<WikiView
+				orgtree={orgTree}
+				{orgFiles}
+				showIndex={fileHandle === null && orgFiles.length > 0}
+				on:fileSelect={(e) => selectOrgFile(e.detail)}
+			/>
+		{:else if viewMode === 'mindmap'}
 			<Mindmap orgtree={orgTree} />
 		{:else}
 			<ThreadsView orgtree={orgTree} {idIndex} />
