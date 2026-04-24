@@ -15,6 +15,7 @@ async function* walkOrgFiles(
 }
 
 export type OrgIdIndex = Map<string, FileSystemFileHandle>;
+export type OrgFilePathIndex = Map<string, FileSystemFileHandle>;
 
 export async function buildOrgIdIndex(dir: FileSystemDirectoryHandle): Promise<OrgIdIndex> {
 	const index: OrgIdIndex = new Map();
@@ -34,6 +35,16 @@ export async function buildOrgIdIndex(dir: FileSystemDirectoryHandle): Promise<O
 	return index;
 }
 
+export async function buildOrgFilePathIndex(
+	dir: FileSystemDirectoryHandle
+): Promise<OrgFilePathIndex> {
+	const index: OrgFilePathIndex = new Map();
+	for await (const { handle, path } of walkOrgFiles(dir)) {
+		index.set(path, handle);
+	}
+	return index;
+}
+
 export async function resolveIdLink(
 	index: OrgIdIndex,
 	id: string
@@ -42,4 +53,20 @@ export async function resolveIdLink(
 	if (!handle) return null;
 	const file = await handle.getFile();
 	return file.text();
+}
+
+export function resolveFilePath(
+	index: OrgFilePathIndex,
+	path: string
+): FileSystemFileHandle | null {
+	// Strip any in-file anchor like ::heading or ::*Heading
+	const cleaned = path.split('::')[0];
+	// Try direct match first (e.g. "roam/foo.org"), then basename fallback
+	const direct = index.get(cleaned);
+	if (direct) return direct;
+	const base = cleaned.split('/').pop() ?? cleaned;
+	for (const [p, h] of index) {
+		if (p === base || p.endsWith('/' + base)) return h;
+	}
+	return null;
 }
