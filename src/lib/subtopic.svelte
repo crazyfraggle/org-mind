@@ -77,8 +77,9 @@
 
 		.subtopicContainer {
 			max-width: 25vw;
-			border-bottom: 1px solid #ccc;
-			background-color: #eee;
+			border-bottom: 1px solid var(--border);
+			background-color: var(--bg-muted);
+			color: var(--fg);
 			padding-inline: 0.5em;
 			border-radius: 0.5em;
 
@@ -90,7 +91,7 @@
 					font-weight: normal;
 				}
 				&.todo {
-					color: red;
+					color: var(--todo-fg);
 				}
 			}
 			.body {

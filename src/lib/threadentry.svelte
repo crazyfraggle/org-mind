@@ -25,10 +25,12 @@
 <style lang="scss">
 	.thread-entry {
 		padding: 0.4em 0.5em;
-		border: 1px solid #e0e0e0;
+		border: 1px solid var(--border-soft);
 		border-radius: 0.4em;
-		background: white;
+		background: var(--bg-surface);
+		color: var(--fg);
 		font-size: 0.85em;
+		overflow: hidden;
 
 		&.done {
 			opacity: 0.6;
@@ -42,6 +44,7 @@
 		font-weight: 600;
 		font-size: inherit;
 		font-family: inherit;
+		color: inherit;
 		text-align: left;
 		padding: 0;
 		border: none;
@@ -50,11 +53,11 @@
 		width: 100%;
 
 		&:hover {
-			color: darkcyan;
+			color: var(--accent);
 		}
 
 		.collapse-indicator {
-			color: darkcyan;
+			color: var(--accent);
 			flex-shrink: 0;
 			width: 1em;
 			text-align: center;

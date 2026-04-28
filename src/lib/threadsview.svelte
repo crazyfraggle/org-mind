@@ -27,7 +27,7 @@
 	.threads-title {
 		font-size: 1.3em;
 		margin: 0 0 0.75rem 0;
-		color: darkcyan;
+		color: var(--accent);
 		flex-shrink: 0;
 	}
 

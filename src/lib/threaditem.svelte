@@ -90,16 +90,17 @@
 			}
 		}
 		&.todo .keyword {
-			color: #d32f2f;
+			color: var(--todo-fg);
 		}
 	}
 
 	.header {
 		font-weight: bold;
 		padding: 0.5em;
-		border: 1px solid #ddd;
+		border: 1px solid var(--border-soft);
 		border-radius: 0.5em;
-		background: white;
+		background: var(--bg-surface);
+		color: var(--fg);
 
 		.keyword {
 			margin-right: 0.3em;
@@ -108,11 +109,11 @@
 
 	.meta {
 		font-size: 0.8em;
-		color: #666;
+		color: var(--fg-muted);
 		padding: 0 0.5em;
 
 		&.deadline {
-			color: #c62828;
+			color: var(--deadline-fg);
 		}
 	}
 
@@ -123,7 +124,7 @@
 
 	.loading {
 		font-size: 0.8em;
-		color: #999;
+		color: var(--fg-very-faint);
 		padding: 0.3em 0.5em;
 	}
 
@@ -135,10 +136,11 @@
 
 	.thread-entry.intro {
 		padding: 0.4em 0.5em;
-		border: 1px solid darkcyan;
-		border-left: 3px solid darkcyan;
+		border: 1px solid var(--accent);
+		border-left: 3px solid var(--accent);
 		border-radius: 0.4em;
-		background: white;
+		background: var(--bg-surface);
+		color: var(--fg);
 		font-size: 0.85em;
 	}
 </style>

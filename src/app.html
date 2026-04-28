@@ -4,6 +4,22 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
 		<meta name="viewport" content="width=device-width" />
+		<script>
+			(function () {
+				try {
+					var stored = localStorage.getItem('org-mind:theme');
+					var theme =
+						stored === 'light' || stored === 'dark'
+							? stored
+							: window.matchMedia('(prefers-color-scheme: dark)').matches
+								? 'dark'
+								: 'light';
+					document.documentElement.dataset.theme = theme;
+				} catch (e) {
+					document.documentElement.dataset.theme = 'light';
+				}
+			})();
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
@@ -18,6 +34,58 @@
 			/* outline: 1px dashed red; */
 		}
 
+		:root {
+			--bg: #ffffff;
+			--bg-alt: #f4f4f4;
+			--bg-alt-hover: #e8e8e8;
+			--bg-muted: #eeeeee;
+			--bg-muted-hover: #dddddd;
+			--bg-card: #f8f8f8;
+			--bg-surface: #ffffff;
+			--fg: #222222;
+			--fg-muted: #666666;
+			--fg-faint: #888888;
+			--fg-very-faint: #999999;
+			--border: #cccccc;
+			--border-soft: #dddddd;
+			--border-strong: #000000;
+			--accent: darkcyan;
+			--accent-hover: teal;
+			--accent-fg: #ffffff;
+			--todo-fg: #d32f2f;
+			--deadline-fg: #c62828;
+			--done-bg: #dddddd;
+			--done-fg: #aaaaaa;
+			--connector: #000000;
+			color-scheme: light;
+		}
+
+		[data-theme='dark'] {
+			--bg: #1a1a1a;
+			--bg-alt: #2a2a2a;
+			--bg-alt-hover: #353535;
+			--bg-muted: #262626;
+			--bg-muted-hover: #333333;
+			--bg-card: #232323;
+			--bg-surface: #1f1f1f;
+			--fg: #e6e6e6;
+			--fg-muted: #aaaaaa;
+			--fg-faint: #888888;
+			--fg-very-faint: #777777;
+			--border: #444444;
+			--border-soft: #333333;
+			--border-strong: #888888;
+			--accent: #4dd0e1;
+			--accent-hover: #80deea;
+			--accent-fg: #0a0a0a;
+			--todo-fg: #ef5350;
+			--deadline-fg: #ff7043;
+			--done-bg: #2c2c2c;
+			--done-fg: #666666;
+			--connector: #888888;
+			color-scheme: dark;
+		}
+
 		html, body {
 			height: 100%;
 		}
@@ -25,6 +93,8 @@
 		body {
 			font-family: sans-serif;
 			font-size: 12pt;
+			background: var(--bg);
+			color: var(--fg);
 		}
 	</style>
 </html>

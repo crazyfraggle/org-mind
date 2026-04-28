@@ -45,15 +45,16 @@
 			margin: 0.5em;
 			padding: 0.5em;
 			border-radius: 0.5em;
-			background-color: #eee;
-			border: 1px solid #ccc;
+			background-color: var(--bg-muted);
+			color: var(--fg);
+			border: 1px solid var(--border);
 			cursor: pointer;
 			&:hover {
-				background-color: #ddd;
+				background-color: var(--bg-muted-hover);
 			}
 			&:focus {
 				outline: none;
-				background-color: #ddd;
+				background-color: var(--bg-muted-hover);
 			}
 		}
 	}

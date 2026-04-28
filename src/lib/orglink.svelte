@@ -29,13 +29,13 @@
 
 <style>
 	.org-link {
-		color: darkcyan;
+		color: var(--accent);
 		text-decoration: underline;
 		cursor: pointer;
 	}
 
 	.org-link:hover {
-		color: teal;
+		color: var(--accent-hover);
 	}
 
 	button.org-link {

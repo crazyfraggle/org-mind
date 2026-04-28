@@ -92,10 +92,11 @@
 
 <style lang="scss">
 	.threadcard {
-		border: 1px solid #bbb;
+		border: 1px solid var(--border);
 		border-radius: 0.75em;
 		padding: 1em;
-		background: #f8f8f8;
+		background: var(--bg-card);
+		color: var(--fg);
 		display: flex;
 		flex-direction: column;
 		gap: 0.5em;
@@ -114,7 +115,7 @@
 		gap: 0.5em;
 		font-size: 1.1em;
 		font-weight: bold;
-		border-bottom: 2px solid darkcyan;
+		border-bottom: 2px solid var(--accent);
 		padding-bottom: 0.4em;
 
 		.keyword {
@@ -126,30 +127,31 @@
 		font-size: 0.65em;
 		font-weight: normal;
 		padding: 0.15em 0.4em;
-		border: 1px solid #ccc;
+		border: 1px solid var(--border);
 		border-radius: 3px;
-		background: #f0f0f0;
+		background: var(--bg-muted);
+		color: var(--fg);
 		cursor: pointer;
 		white-space: nowrap;
 
 		&:hover {
-			background: #e0e0e0;
+			background: var(--bg-muted-hover);
 		}
 	}
 
 	.threadcard.todo .card-header .keyword {
-		color: #d32f2f;
+		color: var(--todo-fg);
 	}
 	.threadcard.done .card-header .keyword {
-		color: #888;
+		color: var(--fg-faint);
 	}
 
 	.meta {
 		font-size: 0.8em;
-		color: #666;
+		color: var(--fg-muted);
 
 		&.deadline {
-			color: #c62828;
+			color: var(--deadline-fg);
 		}
 	}
 
@@ -166,13 +168,13 @@
 
 	.column {
 		flex: 0 0 auto;
-		min-width: 200px;
-		max-width: 300px;
+		min-width: 10vw;
+		max-width: 25vw;
 	}
 
 	.loading {
 		font-size: 0.8em;
-		color: #999;
+		color: var(--fg-very-faint);
 		padding: 0.3em 0;
 	}
 
@@ -184,10 +186,11 @@
 
 	.thread-entry.intro {
 		padding: 0.4em 0.5em;
-		border: 1px solid darkcyan;
-		border-left: 3px solid darkcyan;
+		border: 1px solid var(--accent);
+		border-left: 3px solid var(--accent);
 		border-radius: 0.4em;
-		background: white;
+		background: var(--bg-surface);
+		color: var(--fg);
 		font-size: 0.85em;
 	}
 </style>

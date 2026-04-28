@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { OrgNode } from '$lib/types';
 	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 	import Breadcrumb from './breadcrumb.svelte';
 	import Topic from './topic.svelte';
+	import { theme } from './theme';
 
 	export let orgtree: OrgNode;
 	// export let level: number = 0;
@@ -42,7 +44,10 @@
 			const leftX = rootRect.x + (rootRect.width * 1) / 8;
 			const leftY = rootRect.y + rootRect.height / 2;
 
-			ctx.strokeStyle = 'black';
+			const connector =
+				getComputedStyle(document.documentElement).getPropertyValue('--connector').trim() ||
+				'black';
+			ctx.strokeStyle = connector;
 			ctx.lineWidth = 2;
 
 			document.querySelectorAll('#right .topic').forEach((topic) => {
@@ -91,6 +96,11 @@
 		resizeObserver.observe(mapContainer as Element);
 		return () => resizeObserver.unobserve(mapContainer as Element);
 	});
+
+	$: if (browser) {
+		$theme;
+		updateCanvas();
+	}
 </script>
 
 <!-- Put the breadcrumb back in when we got subtree navigation working. -->
@@ -158,8 +168,9 @@
 	}
 
 	div#root {
-		background: darkcyan;
-		border: 1px solid black;
+		background: var(--accent);
+		color: var(--accent-fg);
+		border: 1px solid var(--border-strong);
 		border-radius: 0.5em;
 		padding: 0.5em 1em;
 		font-size: 125%;
@@ -172,9 +183,10 @@
 		top: 0;
 		right: 0;
 		z-index: 1;
-		background: white;
+		background: var(--bg);
+		color: var(--fg);
 		padding: 5px;
-		border: 1px solid black;
+		border: 1px solid var(--border);
 		border-radius: 5px;
 	}
 

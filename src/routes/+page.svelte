@@ -11,6 +11,7 @@
 		type OrgIdIndex,
 		type OrgFilePathIndex
 	} from '$lib/orgIdIndex';
+	import { theme, toggleTheme } from '$lib/theme';
 
 	// Default URL for URL popup
 	let url: string | null =
@@ -161,6 +162,14 @@
 			<input type="radio" bind:group={viewMode} value="threads" /> Threads
 		</label>
 	</div>
+	<button
+		class="theme-toggle"
+		on:click={toggleTheme}
+		title={$theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+		aria-label="Toggle theme"
+	>
+		{$theme === 'dark' ? '☀️' : '🌙'}
+	</button>
 </div>
 <div id="content" use:listenIdNavigate>
 	{#key reloadKey}
@@ -193,19 +202,21 @@
 		align-items: center;
 		gap: 0.5rem;
 		padding: 0.4rem 0.75rem;
-		background: white;
-		border-bottom: 1px solid #ccc;
+		background: var(--bg);
+		color: var(--fg);
+		border-bottom: 1px solid var(--border);
 		z-index: 1;
 
 		button {
 			padding: 0.25rem 0.6rem;
-			border: 1px solid #aaa;
+			border: 1px solid var(--border);
 			border-radius: 4px;
-			background: #f4f4f4;
+			background: var(--bg-alt);
+			color: var(--fg);
 			cursor: pointer;
 
 			&:hover {
-				background: #e8e8e8;
+				background: var(--bg-alt-hover);
 			}
 		}
 
@@ -220,18 +231,25 @@
 				border-radius: 4px;
 				cursor: pointer;
 				font-size: 0.85em;
-				border: 1px solid #ccc;
+				border: 1px solid var(--border);
+				color: var(--fg);
 
 				&.active {
-					background: darkcyan;
-					color: white;
-					border-color: darkcyan;
+					background: var(--accent);
+					color: var(--accent-fg);
+					border-color: var(--accent);
 				}
 			}
 
 			input[type='radio'] {
 				display: none;
 			}
+		}
+
+		.theme-toggle {
+			padding: 0.25rem 0.5rem;
+			font-size: 1em;
+			line-height: 1;
 		}
 	}
 

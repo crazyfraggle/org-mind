@@ -65,11 +65,11 @@
 
 		&.done {
 			text-decoration: line-through;
-			color: #888;
+			color: var(--fg-faint);
 		}
 
 		&.todo {
-			color: red;
+			color: var(--todo-fg);
 		}
 	}
 
@@ -88,7 +88,7 @@
 	}
 
 	.index-link {
-		color: darkcyan;
+		color: var(--accent);
 		text-decoration: underline;
 		cursor: pointer;
 		background: none;
@@ -97,7 +97,7 @@
 		font: inherit;
 
 		&:hover {
-			color: teal;
+			color: var(--accent-hover);
 		}
 	}
 </style>

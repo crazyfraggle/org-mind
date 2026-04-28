@@ -87,22 +87,22 @@
 
 		&.done {
 			.topicContainer {
-				background-color: #ddd;
+				background-color: var(--done-bg);
 			}
 			.keyword {
-				color: #aaa;
+				color: var(--done-fg);
 			}
 		}
 		&.todo {
 			.keyword {
-				color: #f00;
+				color: var(--todo-fg);
 			}
 		}
 	}
 
 	.topicContainer {
 		max-width: 25vw;
-		border: 1px solid black;
+		border: 1px solid var(--border-strong);
 		border-radius: 1em;
 		padding: 0.5em;
 

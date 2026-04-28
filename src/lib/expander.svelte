@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { theme } from './theme';
 
 	export let isExpanded = false;
 	export let exits: number[] = [];
@@ -21,7 +22,10 @@
 		const canvasWidth = canvasRect.width;
 		const canvasHeight = canvasRect.height;
 		console.log(canvasWidth, canvasHeight);
-		ctx.strokeStyle = 'black';
+		const connector =
+			getComputedStyle(document.documentElement).getPropertyValue('--connector').trim() ||
+			'black';
+		ctx.strokeStyle = connector;
 		ctx.lineWidth = 1;
 		ctx.beginPath();
 
@@ -38,6 +42,7 @@
 	$: buttonLabel = isExpanded ? '➖' : '➕';
 	$: dispatch('expanded', isExpanded);
 	$: updateLines(exits, isExpanded);
+	$: $theme, updateLines(exits, isExpanded);
 </script>
 
 <div class="expander" bind:this={expanderContainer}>
@@ -78,8 +83,9 @@
 		width: 1.5em;
 		height: 1.5em;
 		border-radius: 50%;
-		border: 0.5px solid black;
-		background: white;
+		border: 0.5px solid var(--border-strong);
+		background: var(--bg);
+		color: var(--fg);
 	}
 
 	input {
