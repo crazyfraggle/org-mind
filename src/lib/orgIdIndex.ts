@@ -17,24 +17,6 @@ async function* walkOrgFiles(
 export type OrgIdIndex = Map<string, FileSystemFileHandle>;
 export type OrgFilePathIndex = Map<string, FileSystemFileHandle>;
 
-export async function buildOrgIdIndex(dir: FileSystemDirectoryHandle): Promise<OrgIdIndex> {
-	const index: OrgIdIndex = new Map();
-
-	for await (const { handle } of walkOrgFiles(dir)) {
-		const file = await handle.getFile();
-		const text = await file.text();
-		// Scan for all :ID: lines in the file
-		for (const line of text.split('\n')) {
-			const m = line.match(idPattern);
-			if (m) {
-				index.set(m[1].trim(), handle);
-			}
-		}
-	}
-
-	return index;
-}
-
 export async function buildOrgFilePathIndex(
 	dir: FileSystemDirectoryHandle
 ): Promise<OrgFilePathIndex> {
@@ -45,10 +27,25 @@ export async function buildOrgFilePathIndex(
 	return index;
 }
 
-export async function resolveIdLink(
-	index: OrgIdIndex,
-	id: string
-): Promise<string | null> {
+// Builds the ID index from an already-built file-path index so that handles
+// shared between indexes are reference-equal. Reference equality is what lets
+// the page reverse-look-up the path from a handle when updating the URL hash.
+export async function buildOrgIdIndex(pathIndex: OrgFilePathIndex): Promise<OrgIdIndex> {
+	const index: OrgIdIndex = new Map();
+	for (const handle of pathIndex.values()) {
+		const file = await handle.getFile();
+		const text = await file.text();
+		for (const line of text.split('\n')) {
+			const m = line.match(idPattern);
+			if (m) {
+				index.set(m[1].trim(), handle);
+			}
+		}
+	}
+	return index;
+}
+
+export async function resolveIdLink(index: OrgIdIndex, id: string): Promise<string | null> {
 	const handle = index.get(id);
 	if (!handle) return null;
 	const file = await handle.getFile();
