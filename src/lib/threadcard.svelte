@@ -11,8 +11,9 @@
 	export let thread: OrgNode;
 	export let idIndex: OrgIdIndex | null = null;
 
-	let hideDone = false;
-	$: hasDone = thread.children.some((c) => c.state === 'done');
+	let hideDone = true;
+	$: doneCount = thread.children.filter((c) => c.state === 'done').length;
+	$: hasDone = doneCount > 0;
 	$: visibleChildren = hideDone
 		? thread.children.filter((c) => c.state !== 'done')
 		: thread.children;
@@ -50,7 +51,7 @@
 		</div>
 		{#if hasDone}
 			<button class="toggle-done" on:click={() => (hideDone = !hideDone)}>
-				{hideDone ? 'Show' : 'Hide'} done
+				{hideDone ? `${doneCount} Done` : 'Hide done'}
 			</button>
 		{/if}
 	</div>
