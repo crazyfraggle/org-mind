@@ -14,11 +14,13 @@
 
 	const orgLinkPattern = /\[\[([^\]]+)\](?:\[([^\]]+)\])?\]/g;
 	const urlPattern = /\b[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s)>\]]+/g;
+	const inlineCodePattern = /(^|[\s({[])=([^\s=](?:[^=]*[^\s=])?)=(?=$|[\s.,;:!?)\]}])/g;
 
 	type TextSeg = { kind: 'text'; text: string };
 	type UrlSeg = { kind: 'url'; text: string };
 	type LinkSeg = { kind: 'link'; target: string; description: string };
-	type Segment = TextSeg | UrlSeg | LinkSeg;
+	type CodeSeg = { kind: 'code'; text: string };
+	type Segment = TextSeg | UrlSeg | LinkSeg | CodeSeg;
 
 	$: segments = tokenize(text.text);
 
@@ -43,9 +45,26 @@
 		let lastIndex = 0;
 		for (const match of input.matchAll(urlPattern)) {
 			if (match.index > lastIndex) {
-				parts.push({ kind: 'text', text: input.slice(lastIndex, match.index) });
+				parts.push(...splitInlineCode(input.slice(lastIndex, match.index)));
 			}
 			parts.push({ kind: 'url', text: match[0] });
+			lastIndex = match.index + match[0].length;
+		}
+		if (lastIndex < input.length) {
+			parts.push(...splitInlineCode(input.slice(lastIndex)));
+		}
+		return parts;
+	}
+
+	function splitInlineCode(input: string): Segment[] {
+		const parts: Segment[] = [];
+		let lastIndex = 0;
+		for (const match of input.matchAll(inlineCodePattern)) {
+			const codeStart = match.index + match[1].length;
+			if (codeStart > lastIndex) {
+				parts.push({ kind: 'text', text: input.slice(lastIndex, codeStart) });
+			}
+			parts.push({ kind: 'code', text: match[2] });
 			lastIndex = match.index + match[0].length;
 		}
 		if (lastIndex < input.length) {
@@ -63,5 +82,5 @@
 			>{:else if seg.kind === 'link'}<OrgLink
 				target={seg.target}
 				description={seg.description}
-			/>{:else}{seg.text}{/if}{/each}</p
+			/>{:else if seg.kind === 'code'}<code>{seg.text}</code>{:else}{seg.text}{/if}{/each}</p
 >
