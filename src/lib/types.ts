@@ -18,14 +18,12 @@ export interface OrgSource {
 
 export interface OrgUnorderedList {
 	type: 'unorderedList';
-	// indentation: number;
-	items: OrgBodyElement[];
+	items: OrgText[];
 }
 export interface OrgOrderedList {
 	type: 'orderedList';
-	// indentation: number;
-	// number: number;
-	items: OrgBodyElement[];
+	style: 'decimal' | 'lower-alpha' | 'upper-alpha';
+	items: OrgText[];
 }
 
 export interface OrgLink {

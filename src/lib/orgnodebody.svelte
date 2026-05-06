@@ -36,13 +36,13 @@
 		{:else if isUnorderedList(element)}
 			<ul>
 				{#each element.items as item}
-					<li>{item}</li>
+					<li><OrgNodeText text={item} inline /></li>
 				{/each}
 			</ul>
 		{:else if isOrderedList(element)}
-			<ol>
+			<ol style:list-style-type={element.style}>
 				{#each element.items as item}
-					<li>{item}</li>
+					<li><OrgNodeText text={item} inline /></li>
 				{/each}
 			</ol>
 		{:else if isSource(element)}

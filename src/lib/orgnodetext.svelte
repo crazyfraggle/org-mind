@@ -3,6 +3,7 @@
 	import OrgLink from './orglink.svelte';
 
 	export let text: OrgText;
+	export let inline = false;
 
 	// Todo: Tokenize text to extract more markup:
 	// - Bold, format: *bold*
@@ -74,13 +75,12 @@
 	}
 </script>
 
-<p
-	>{#each segments as seg}{#if seg.kind === 'url'}<a
-				href={seg.text}
-				target="_blank"
-				rel="noopener">{seg.text}</a
+<svelte:element this={inline ? 'span' : 'p'}
+	>{#each segments as seg}{#if seg.kind === 'url'}<a href={seg.text} target="_blank" rel="noopener"
+				>{seg.text}</a
 			>{:else if seg.kind === 'link'}<OrgLink
 				target={seg.target}
 				description={seg.description}
-			/>{:else if seg.kind === 'code'}<code>{seg.text}</code>{:else}{seg.text}{/if}{/each}</p
+			/>{:else if seg.kind === 'code'}<code>{seg.text}</code
+			>{:else}{seg.text}{/if}{/each}</svelte:element
 >

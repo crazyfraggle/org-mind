@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { orgTextToMindMap } from './orgTextToMindMap';
-import { isLink, isSource, isText } from './types';
+import { isLink, isOrderedList, isSource, isText, isUnorderedList } from './types';
 
 describe('header parsing tests', () => {
 	it('detects a header', () => {
@@ -291,6 +291,92 @@ See [[id:abc][link here]] for details
 		const node = rootNode.children[0];
 		expect(node.body.length).toBe(1);
 		expect(isText(node.body[0])).toBe(true);
+	});
+});
+
+describe('list parsing tests', () => {
+	it('parses an unordered list with -', () => {
+		const org = `
+* Heading
+- item 1
+- item 2
+`;
+		const node = orgTextToMindMap(org).children[0];
+		expect(node.body.length).toBe(1);
+		expect(isUnorderedList(node.body[0])).toBe(true);
+		if (isUnorderedList(node.body[0])) {
+			expect(node.body[0].items.map((i) => i.text)).toEqual(['item 1', 'item 2']);
+		}
+	});
+
+	it('merges - and + into a single unordered list', () => {
+		const org = `
+* Heading
+- one
++ two
+`;
+		const node = orgTextToMindMap(org).children[0];
+		expect(node.body.length).toBe(1);
+		expect(isUnorderedList(node.body[0])).toBe(true);
+		if (isUnorderedList(node.body[0])) {
+			expect(node.body[0].items.map((i) => i.text)).toEqual(['one', 'two']);
+		}
+	});
+
+	it('parses a numbered ordered list', () => {
+		const org = `
+* Heading
+1. first
+2. second
+`;
+		const node = orgTextToMindMap(org).children[0];
+		expect(node.body.length).toBe(1);
+		expect(isOrderedList(node.body[0])).toBe(true);
+		if (isOrderedList(node.body[0])) {
+			expect(node.body[0].style).toBe('decimal');
+			expect(node.body[0].items.map((i) => i.text)).toEqual(['first', 'second']);
+		}
+	});
+
+	it('parses a lowercase-letter ordered list', () => {
+		const org = `
+* Heading
+a. alpha
+b. beta
+`;
+		const node = orgTextToMindMap(org).children[0];
+		expect(isOrderedList(node.body[0])).toBe(true);
+		if (isOrderedList(node.body[0])) {
+			expect(node.body[0].style).toBe('lower-alpha');
+			expect(node.body[0].items.map((i) => i.text)).toEqual(['alpha', 'beta']);
+		}
+	});
+
+	it('parses an uppercase-letter ordered list with ) suffix', () => {
+		const org = `
+* Heading
+A) Alpha
+B) Beta
+`;
+		const node = orgTextToMindMap(org).children[0];
+		expect(isOrderedList(node.body[0])).toBe(true);
+		if (isOrderedList(node.body[0])) {
+			expect(node.body[0].style).toBe('upper-alpha');
+			expect(node.body[0].items.map((i) => i.text)).toEqual(['Alpha', 'Beta']);
+		}
+	});
+
+	it('keeps preceding text and the list as separate body elements', () => {
+		const org = `
+* Heading
+Below is a list:
+- one
+- two
+`;
+		const node = orgTextToMindMap(org).children[0];
+		expect(node.body.length).toBe(2);
+		expect(isText(node.body[0])).toBe(true);
+		expect(isUnorderedList(node.body[1])).toBe(true);
 	});
 });
 

@@ -1,10 +1,10 @@
-import type { OrgLink, OrgNode, OrgSource } from './types';
+import type { OrgLink, OrgNode, OrgOrderedList, OrgSource, OrgText } from './types';
 
 const lineMatchers = {
 	header: /^(\*+)\s+(.*)$/, // m[1] => level, m[2] => content
 	preformatted: /^(\s*):(?: (.*)$|$)/, // m[1] => indentation, m[2] => content
 	unorderedListElement: /^(\s*)(?:-|\+|\s+\*)\s+(.*)$/, // m[1] => indentation, m[2] => content
-	orderedListElement: /^(\s*)(\d+)(?:\.|\))\s+(.*)$/, // m[1] => indentation, m[2] => number, m[3] => content
+	orderedListElement: /^(\s*)(\d+|[a-zA-Z])[.)]\s+(.*)$/, // m[1] => indentation, m[2] => marker, m[3] => content
 	tableSeparator: /^(\s*)\|((?:\+|-)*?)\|?$/, // m[1] => indentation, m[2] => content
 	tableRow: /^(\s*)\|(.*?)\|?$/, // m[1] => indentation, m[2] => content
 	blank: /^\s*$/,
@@ -27,6 +27,11 @@ const standaloneOrgLink = /^\s*\[\[([^\]]*)\]\[([^\]]*)\]\]\s*$/;
 const propertyLine = /^\s*:([A-Za-z_]+):\s+(.+)$/;
 
 let todoKeywords: { todo: string[]; done: string[] } = { todo: ['TODO'], done: ['DONE'] };
+
+function orderedListStyle(marker: string): OrgOrderedList['style'] {
+	if (/^\d+$/.test(marker)) return 'decimal';
+	return marker === marker.toLowerCase() ? 'lower-alpha' : 'upper-alpha';
+}
 
 function detectNodeState(node: OrgNode) {
 	const title = node.title;
@@ -218,6 +223,25 @@ export function orgTextToMindMap(org: string): OrgNode {
 		} else if ((m = line.match(standaloneOrgLink))) {
 			const linkElement: OrgLink = { type: 'link', target: m[1], description: m[2] };
 			currentNode.body.push(linkElement);
+		} else if ((m = line.match(lineMatchers.unorderedListElement))) {
+			const items: OrgText[] = [{ type: 'text', text: m[2] }];
+			while (i + 1 < orgLines.length) {
+				const nm = orgLines[i + 1].match(lineMatchers.unorderedListElement);
+				if (!nm) break;
+				items.push({ type: 'text', text: nm[2] });
+				i++;
+			}
+			currentNode.body.push({ type: 'unorderedList', items });
+		} else if ((m = line.match(lineMatchers.orderedListElement))) {
+			const style = orderedListStyle(m[2]);
+			const items: OrgText[] = [{ type: 'text', text: m[3] }];
+			while (i + 1 < orgLines.length) {
+				const nm = orgLines[i + 1].match(lineMatchers.orderedListElement);
+				if (!nm) break;
+				items.push({ type: 'text', text: nm[3] });
+				i++;
+			}
+			currentNode.body.push({ type: 'orderedList', style, items });
 		} else if ((m = line.match(lineMatchers.blank))) {
 			// console.log('Blank line');
 		} else if ((m = line.match(lineMatchers.line))) {
