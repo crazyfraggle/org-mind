@@ -54,7 +54,7 @@
 	.wikiview {
 		height: 100%;
 		overflow-y: auto;
-		max-width: 70ch;
+		max-width: 100ch;
 		margin: 0 auto;
 		padding: 2rem 1rem;
 		line-height: 1.5;
