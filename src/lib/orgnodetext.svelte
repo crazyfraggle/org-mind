@@ -16,12 +16,16 @@
 	const orgLinkPattern = /\[\[([^\]]+)\](?:\[([^\]]+)\])?\]/g;
 	const urlPattern = /\b[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s)>\]]+/g;
 	const inlineCodePattern = /(^|[\s({[])=([^\s=](?:[^=]*[^\s=])?)=(?=$|[\s.,;:!?)\]}])/g;
+	const boldPattern = /(^|[\s({[])\*([^\s*](?:[^*]*[^\s*])?)\*(?=$|[\s.,;:!?)\]}])/g;
+	const italicPattern = /(^|[\s({[])\/([^\s/](?:[^/]*[^\s/])?)\/(?=$|[\s.,;:!?)\]}])/g;
 
 	type TextSeg = { kind: 'text'; text: string };
 	type UrlSeg = { kind: 'url'; text: string };
 	type LinkSeg = { kind: 'link'; target: string; description: string };
 	type CodeSeg = { kind: 'code'; text: string };
-	type Segment = TextSeg | UrlSeg | LinkSeg | CodeSeg;
+	type BoldSeg = { kind: 'bold'; text: string };
+	type ItalicSeg = { kind: 'italic'; text: string };
+	type Segment = TextSeg | UrlSeg | LinkSeg | CodeSeg | BoldSeg | ItalicSeg;
 
 	$: segments = tokenize(text.text);
 
@@ -46,9 +50,43 @@
 		let lastIndex = 0;
 		for (const match of input.matchAll(urlPattern)) {
 			if (match.index > lastIndex) {
-				parts.push(...splitInlineCode(input.slice(lastIndex, match.index)));
+				parts.push(...splitBold(input.slice(lastIndex, match.index)));
 			}
 			parts.push({ kind: 'url', text: match[0] });
+			lastIndex = match.index + match[0].length;
+		}
+		if (lastIndex < input.length) {
+			parts.push(...splitBold(input.slice(lastIndex)));
+		}
+		return parts;
+	}
+
+	function splitBold(input: string): Segment[] {
+		const parts: Segment[] = [];
+		let lastIndex = 0;
+		for (const match of input.matchAll(boldPattern)) {
+			const innerStart = match.index + match[1].length;
+			if (innerStart > lastIndex) {
+				parts.push(...splitItalic(input.slice(lastIndex, innerStart)));
+			}
+			parts.push({ kind: 'bold', text: match[2] });
+			lastIndex = match.index + match[0].length;
+		}
+		if (lastIndex < input.length) {
+			parts.push(...splitItalic(input.slice(lastIndex)));
+		}
+		return parts;
+	}
+
+	function splitItalic(input: string): Segment[] {
+		const parts: Segment[] = [];
+		let lastIndex = 0;
+		for (const match of input.matchAll(italicPattern)) {
+			const innerStart = match.index + match[1].length;
+			if (innerStart > lastIndex) {
+				parts.push(...splitInlineCode(input.slice(lastIndex, innerStart)));
+			}
+			parts.push({ kind: 'italic', text: match[2] });
 			lastIndex = match.index + match[0].length;
 		}
 		if (lastIndex < input.length) {
@@ -81,6 +119,8 @@
 			>{:else if seg.kind === 'link'}<OrgLink
 				target={seg.target}
 				description={seg.description}
-			/>{:else if seg.kind === 'code'}<code>{seg.text}</code
+			/>{:else if seg.kind === 'code'}<code>{seg.text}</code>{:else if seg.kind === 'bold'}<strong
+				>{seg.text}</strong
+			>{:else if seg.kind === 'italic'}<em>{seg.text}</em
 			>{:else}{seg.text}{/if}{/each}</svelte:element
 >
